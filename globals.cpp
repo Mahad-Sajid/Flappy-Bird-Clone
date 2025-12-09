@@ -2,13 +2,14 @@
 #include <cstdlib>
 #include <ctime>
 
-// global variables are defined here!!!!!!!!
+using namespace std;
+// global variable definitions
 
 // start at menu screen
 int currentState = STATE_MENU;
 
 // bird starting position and movement
-float birdY = 10.0f;           // starts in middle-ish of screen
+float birdY = 10.0f;           // starts in middle of screen
 float birdVelocity = 0.0f;     // not moving initially
 int birdSpriteIndex = 0;       // default to yellow bird
 
@@ -16,7 +17,7 @@ int birdSpriteIndex = 0;       // default to yellow bird
 const float GRAVITY = 40.0f;         // pulls bird down
 const float FLAP_STRENGTH = -20.0f;  // negative means upward push
 
-// pipe arrays - storing data for 3 pipes
+// pipe arrays storing data for 3 pipes
 float pipeX[MAX_PIPES] = { 0.0f, 0.0f, 0.0f };
 float pipeGapY[MAX_PIPES] = { 0.0f, 0.0f, 0.0f };
 
@@ -43,7 +44,7 @@ int currentTheme = 0;
 // called once when game starts - sets everything up
 void initializeGame()
 {
-    // seed random number generator with current time
+    // for adding randomness in pipes gaps every time we run the cede
     srand(static_cast<unsigned>(time(0)));
 
     // position pipes off-screen to the right, spaced out
@@ -51,7 +52,7 @@ void initializeGame()
     {
         pipeX[i] = static_cast<float>(CONSOLE_WIDTH + i * 30);
 
-        // random gap position (between row 5 and 15)
+        // random gap position (between row 5 and 14)
         pipeGapY[i] = static_cast<float>(5 + (rand() % 10));
 
         // mark as not scored yet
@@ -84,7 +85,7 @@ void resetGame()
     for (int i = 0; i < MAX_PIPES; i++)
     {
         pipeX[i] = static_cast<float>(CONSOLE_WIDTH + i * 30);
-        pipeGapY[i] = static_cast<float>(5 + (std::rand() % 10));
+        pipeGapY[i] = static_cast<float>(5 + (rand() % 10));
         scoreIncremented[i] = false;
     }
 }
