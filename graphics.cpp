@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "globals.h"
 #include "filehandling.h"
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -19,6 +20,7 @@ Texture g_pipeTopTexture;
 Texture g_pipeBottomTexture;
 
 //for sound
+SoundBuffer g_load;
 SoundBuffer g_flap;
 SoundBuffer g_point;
 SoundBuffer g_hit;
@@ -64,7 +66,7 @@ void Graphics()
     else
         g_flapS.setBuffer(g_flap);
 
-    if (!g_hit.loadFromFile("assets\\audio_hit.mp3"))
+    if (!g_hit.loadFromFile("assets\\audio_hit.wav"))
         cout << "Failed to load hit audio" << endl;
     else
         g_hitS.setBuffer(g_hit);
@@ -74,7 +76,50 @@ void Graphics()
     else
         g_pointS.setBuffer(g_point);
 }
+void drawLoadingScreen(RenderWindow& window, float progress)
+{
+    float windowWidth = static_cast<float>(window.getSize().x);
+    float windowHeight = static_cast<float>(window.getSize().y);
 
+    float ratiox = windowWidth / 480.f;
+    float ratioy = windowHeight / 480.f;
+    float ratio = std::min(ratiox, ratioy);
+
+    // background color
+    window.clear(sf::Color::White);
+
+    Text loadingText(g_font);   // use your global font
+    loadingText.setString("LOADING");
+    loadingText.setCharacterSize(static_cast<unsigned int>(60.f * ratio));
+    loadingText.setFillColor(sf::Color::Black);
+    loadingText.setStyle(sf::Text::Bold);
+
+    FloatRect textBounds = loadingText.getLocalBounds();
+
+    loadingText.setPosition({ windowWidth / 2.f - textBounds.size.x / 2.f,160.f * ratioy });
+    window.draw(loadingText);
+
+    // size of bar
+    float barWidth = 300.f * ratiox;
+    float barHeight = 30.f * ratioy;
+
+    //background of bar
+    RectangleShape barBg({ barWidth, barHeight });
+    barBg.setPosition({ windowWidth / 2.f - barWidth / 2.f, 250.f * ratioy });
+    barBg.setFillColor(sf::Color(0, 0, 0, 0));   // transparent
+    barBg.setOutlineThickness(3.f);
+    barBg.setOutlineColor(sf::Color::Black);
+    window.draw(barBg);
+
+    // filling progress
+    float clampedProgress = min(progress, 1.0f); // 0..1
+    RectangleShape barFill(sf::Vector2f(barWidth * clampedProgress, barHeight));
+    barFill.setPosition(barBg.getPosition());
+    barFill.setFillColor(sf::Color::Black);
+    window.draw(barFill);
+
+    window.display();
+}
 //background with theme support (3 themes)
 void drawbackground(RenderWindow& window)
 {
@@ -84,7 +129,6 @@ void drawbackground(RenderWindow& window)
         g_bgNightTexture;
 
     Sprite bg(texToUse);
-
 
     //get size of window
     float windowWidth = window.getSize().x;
@@ -123,7 +167,7 @@ void drawground(RenderWindow& window)
     float scaleY = desiredGroundHeight / groundTextureHeight;
 
     // Apply scale to ground
-    ground.setScale({ scaleX, scaleY});
+    ground.setScale({ scaleX, scaleY });
 
     // Put ground at bottom
     float groundX = 0.0f;
@@ -255,7 +299,6 @@ void drawbird(RenderWindow& window, int birdchoice)
 
     Sprite birdSprite(g_birdTexture[birdchoice]);
 
-    //get size of window
     float windowWidth = window.getSize().x;
     float windowHeight = window.getSize().y;
     float groundHeight = g_groundTexture.getSize().y;
@@ -263,7 +306,6 @@ void drawbird(RenderWindow& window, int birdchoice)
     // Calculate sky area
     float skyHeight = windowHeight - groundHeight;
 
-    // Calculate column and row sizes
     float colWidth = windowWidth / CONSOLE_WIDTH;
     float rowHeight = skyHeight / CONSOLE_HEIGHT;
 
@@ -396,6 +438,7 @@ void drawsettings(RenderWindow& window, int settingsSelect, int birdChoice)
         //drawing highligh box when selected
         if (i == settingsSelect)
         {
+           
             float highlightSize = windowHeight * 0.1f;
             RectangleShape highlight;
             highlight.setSize(Vector2f(highlightSize, highlightSize));
@@ -404,7 +447,9 @@ void drawsettings(RenderWindow& window, int settingsSelect, int birdChoice)
             float highlightX = birdX - (highlightSize * 0.1f);
             float highlightY = birdY - (highlightSize * 0.1f);
             highlight.setPosition({ highlightX, highlightY });
+            birdSpriteIndex;
             window.draw(highlight);
+           
         }
 
         //drawing birdy
@@ -649,7 +694,9 @@ void drawpipes(RenderWindow& window)
     }
 }
 
+
 //sound functions
+
 void playFlapSound()
 {
     g_flapS.play();
