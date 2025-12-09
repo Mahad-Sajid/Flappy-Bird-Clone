@@ -2,16 +2,13 @@
 #include "globals.h"
 #include <fstream>
 #include <iostream>
-#include <sstream>
+#include <cstdio>  
 using namespace std;
 
-// save current game state to a file (slot 1, 2, or 3)
 void saveGame(int slot)
 {
-    //filename built based on slot number
-    stringstream ss;
-    ss << "savegame" << slot << ".txt";
-    string filename = ss.str();
+    char filename[20];
+    snprintf(filename, sizeof(filename), "savegame%d.txt", slot);
 
     ofstream outFile(filename);
 
@@ -37,29 +34,40 @@ void saveGame(int slot)
     }
     else
     {
-        cout << "Save Failed!" <<endl;
+        cout << "Save Failed!" << endl;
     }
 }
 
-// load game from a save file
 bool loadGame(int slot)
 {
-    // build filename
-    stringstream ss;
-    ss << "savegame" << slot << ".txt";
-    string filename = ss.str();
+    char filename[20];
+    snprintf(filename, sizeof(filename), "savegame%d.txt", slot);
+
     ifstream inFile(filename);
 
     if (inFile.is_open())
     {
-        // load bird data
+        // check empty file
+        inFile.seekg(0, ios::end);
+        streampos fileSize = inFile.tellg();
+
+        if (fileSize == 0)
+        {
+            inFile.close();
+            remove(filename);
+            cout << "Empty save file deleted from slot " << slot << "!" << endl;
+            return false;
+        }
+
+        inFile.seekg(0, ios::beg);
+
+        // load data
         inFile >> birdY;
         inFile >> birdVelocity;
         inFile >> birdSpriteIndex;
         inFile >> currentScore;
         inFile >> currentTheme;
 
-        // load all pipe data
         for (int i = 0; i < MAX_PIPES; i++)
         {
             inFile >> pipeX[i];
@@ -67,45 +75,45 @@ bool loadGame(int slot)
             inFile >> scoreIncremented[i];
         }
 
-        // close file
         inFile.close();
         cout << "Game Loaded from slot " << slot << "!" << endl;
-        return true;  // load successful
+        return true;
     }
-    else
-    {
-        cout << "No saved game found in slot " << slot << "!" << endl;
-        return false;  // load failed
-    }
+
+    cout << "No saved game found in slot " << slot << "!" << endl;
+    return false;
 }
 
-// check if a save slot has data in it
 bool hasSaveData(int slot)
 {
-    // build filename
-    stringstream ss;
-    ss << "savegame" << slot << ".txt";
-    string filename = ss.str();
-    ifstream inFile(filename);
-    bool exists = inFile.is_open();
+    char filename[20];
+    snprintf(filename, sizeof(filename), "savegame%d.txt", slot);
 
-    // close if it opened successfully
-    if (exists)
+    ifstream inFile(filename);
+
+    if (!inFile.is_open())
+        return false;
+
+    inFile.seekg(0, ios::end);
+    streampos fileSize = inFile.tellg();
+
+    if (fileSize == 0)
     {
         inFile.close();
+        remove(filename);
+        return false;
     }
 
-    return exists;
+    inFile.close();
+    return true;
 }
 
-// loading highscores from file
 void loadHighScores()
 {
     ifstream inFile("highscores.txt");
 
     if (inFile.is_open())
     {
-        // read all 5 high scores
         for (int i = 0; i < MAX_HIGH_SCORES; i++)
         {
             inFile >> highScores[i];
@@ -114,34 +122,29 @@ void loadHighScores()
     }
     else
     {
-        // if file doesn't exist, initialize with zeros
+        // initialize with zeros
         for (int i = 0; i < MAX_HIGH_SCORES; i++)
         {
             highScores[i] = 0;
         }
     }
 }
-
-// save high scores to file
 void saveHighScores()
 {
     ofstream outFile("highscores.txt");
 
     if (outFile.is_open())
     {
-        // write all 5 scores
         for (int i = 0; i < MAX_HIGH_SCORES; i++)
         {
-            outFile << highScores[i] <<endl;
+            outFile << highScores[i] << endl;
         }
         outFile.close();
     }
 }
 
-// sorting highscores
 void updateHighScores(int newScore)
 {
-    // loop through existing high scores
     for (int i = 0; i < MAX_HIGH_SCORES; i++)
     {
         if (newScore > highScores[i])
@@ -152,7 +155,42 @@ void updateHighScores(int newScore)
             }
             highScores[i] = newScore;
             saveHighScores();
-            break;  
+            break;
         }
+    }
+}
+
+void saveSettings()
+{
+    string filename = "settings.txt";
+    ofstream outFile(filename);
+
+    if (outFile.is_open())
+    {
+        // save birdSpriteIndex and currentTheme
+        outFile << birdSpriteIndex << '\n';
+        outFile << currentTheme << '\n';
+        outFile.close();
+    }
+
+}
+
+void loadSettings()
+{
+    string filename = "settings.txt";
+    ifstream inFile(filename);
+
+    if (inFile.is_open())
+    {
+        // load saved values
+        inFile >> birdSpriteIndex;
+        inFile >> currentTheme;
+        inFile.close();
+    }
+    else
+    {
+        // default values if file does not exist yet
+        birdSpriteIndex = 0;   // Yellow bird as default
+        currentTheme = 0;   // Day theme as default (if you use themes)
     }
 }
