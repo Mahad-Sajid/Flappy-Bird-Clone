@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-
 #include "globals.h"
 #include "game.h"
 #include "graphics.h"
@@ -11,24 +10,34 @@ using namespace std;
 
 int main()
 {
-    
+    // window dimensions: 800 x 600 seemed smoothest 
     const unsigned int WIDTH = 800;
     const unsigned int HEIGHT = 600;
 
+    // create game window
     RenderWindow window(VideoMode({ WIDTH, HEIGHT }), "404-Not Flapping");
-    window.setFramerateLimit(60); 
+    window.setKeyRepeatEnabled(false);
+    window.setFramerateLimit(60);
 
     // setup view for window resizing
     View view(FloatRect({ 0.f, 0.f }, { static_cast<float>(WIDTH), static_cast<float>(HEIGHT) }));
     window.setView(view);
-    window.setKeyRepeatEnabled(false);
-
 
     // load all game assets (textures, fonts, sounds)
     Graphics();
 
-    initializeGame();
+    for (int i = 0; i <= 100; ++i)
+    {
+        float progress = i / 100.f;      // 0.0 to 1.0
+        drawLoadingScreen(window, progress);
+        sleep(milliseconds(15)); // small delay so
+    }
 
+    // initialize game state
+    initializeGame();
+    loadSettings();
+    settingsSelection = birdSpriteIndex;
+    // load high scores from file
     loadHighScores();
 
     // clock for tracking time between frames
@@ -41,7 +50,7 @@ int main()
         float dt = clock.restart().asSeconds();
 
         // process all window events
-        while (optional event = window.pollEvent()) 
+        while (optional event = window.pollEvent())  // SFML 3 returns optional
         {
             // check if user closed window
             if (event->is<Event::Closed>())
@@ -182,6 +191,7 @@ int main()
                     else if (keyPress->code == Keyboard::Key::Enter || keyPress->code == Keyboard::Key::Space)
                     {
                         birdSpriteIndex = settingsSelection;
+                        saveSettings();
                     }
                     // return to menu
                     else if (keyPress->code == Keyboard::Key::Escape)
