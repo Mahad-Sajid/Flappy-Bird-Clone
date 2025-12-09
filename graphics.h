@@ -7,6 +7,9 @@ using namespace sf;
 // load textures, fonts
 void Graphics();
 
+//for loading screen
+void drawLoadingScreen(RenderWindow& window, float progress);
+
 // menu
 void drawmenu(RenderWindow& window, int menuselect);
 
