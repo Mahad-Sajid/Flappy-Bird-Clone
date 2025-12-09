@@ -42,9 +42,9 @@ extern int currentScore;
 extern bool scoreIncremented[MAX_PIPES];  // prevents double-counting scores
 
 // menu navigation
-extern int menuSelection;      // which menu option is highlighted (0 to 4)
-extern int settingsSelection;  // which bird color is selected (0 to 2)
-extern int loadGameSelection;  // which save slot is selected (0 to 2)
+extern int menuSelection;      // which menu pos
+extern int settingsSelection;  // which bird color 
+extern int loadGameSelection;  // which save slot 
 
 // visual theme system
 extern int currentTheme;  // 0=day, 1=evening, 2=night
